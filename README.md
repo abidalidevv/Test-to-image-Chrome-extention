@@ -20,79 +20,143 @@
 
 ## 🌟 Overview
 
-**Test-to-Image & Veo Flow Automation** is an advanced browser extension built for creative professionals, video editors, and digital creators generating media at scale on [Google Flow](https://flow.google.com) and **Google Veo**.
+**Test-to-Image & Veo Flow Automation** is an autonomous browser extension for [Google Flow](https://flow.google.com) and **Google Veo**. It transforms manual prompt submission into a fully automated, scalable production pipeline.
 
-Integrated directly inside your browser's native **Chrome Side Panel**, this extension automates the entire media production pipeline:
-- Batch queueing prompts with randomized organic delays
-- Multi-modal generation (**Text-to-Image**, **Text-to-Video**, **Image-to-Video**)
-- Automatic character tile synchronization & voice attribution
-- Hands-free auto-downloading of finished media in **1080p**, **2K**, and **4K** resolutions
+Operating directly inside the **Chrome Side Panel**, it manages batch prompt queues, injects organic input keystrokes, tracks rendering lifecycles, and automatically downloads and organizes generated media into designated folders.
 
 ---
 
-## ✨ Key Features
+## 🚀 What's New in v3.5.2
 
-- ⚡ **Batch Prompt Generation**: Queue hundreds of prompts sequentially or in parallel without manual copy-pasting.
-- 🖼️ **Multi-Modal Generation**:
-  - **Text to Image**: High-resolution image synthesis with aspect ratio controls.
-  - **Text to Video & Image to Video**: Automatic camera motion, duration selection (8s+), and aspect ratios (16:9 / 9:16).
-  - **Component to Video**: Feeding seed elements to synthesize cohesive video scenes.
-- 💾 **Automated Media Downloader**:
-  - Detects finished outputs automatically.
-  - Downloads video files (`.mp4`) and image files (`.png`, `.jpg`) into designated project subfolders.
-  - Auto-selects output quality presets: **1080p**, **2K**, and **4K**.
-- 🛡️ **Zero-Downtime Resilience**:
-  - Embedded offline fallback with **55 live Google Flow DOM selectors**—zero dependence on external config servers.
-- 🌐 **Global Multi-Language Support**:
-  - Full interface localization in English, Spanish, German, French, Italian, Hindi, Bengali, Arabic, Japanese, and more.
-- 🎨 **Modern Cyber-Cyan & Indigo Interface**:
-  - Sleek dark theme with live rendering progress meters, action logs, and quick controls.
+- **⚡ Instant One-Click Launch**: Clicking the extension icon or the **Run** button automatically navigates or switches you directly to `https://flow.google.com/`—no manual navigation needed.
+- **🎯 Default Mode: Text to Image**: Settings preset to **Text to Image** with **1 Concurrent Prompt** and **1 Output per Prompt** for optimal stability and generation speed.
+- **🛡️ Silent Background Automation**: Suppresses repetitive "Unusual Activity" prompts by default (`hideTipBeforeUse: true`) for distraction-free generation.
+- **🔄 Smart Tab Handshake**: Proactively discovers existing Google Flow tabs or creates new ones without displaying blocking warning overlays.
 
 ---
 
-## 📥 Quick Installation Guide
+## 📁 Repository & File Structure
 
-Runs out of the box with zero build dependencies!
-
-### Step 1: Clone the Repository
-```bash
-git clone https://github.com/abidalidevv/Test-to-image-Chrome-extention.git
+```text
+veo-automation-with-Mbmirza/
+├── manifest.json                  # Manifest V3 extension configuration & permissions
+├── service-worker-loader.js       # Background service worker loader
+├── logo.png                       # Extension brand logo
+├── LICENSE                        # MIT Open Source License
+├── README.md                      # Comprehensive documentation & guides
+├── assets/
+│   ├── index.ts-BNvXgTH3.js       # Service Worker (Debugger API, cookie cleaner, download router)
+│   ├── index.ts-loader-BNP0wsxk.js# Content Script loader for flow.google.com
+│   ├── index.ts-D1zBd6hg.js       # Content Script core (DOM observer & event dispatcher)
+│   ├── index.html-Brqyon0Y.js     # Side Panel App Engine (Vue 3, State, Queue Manager)
+│   ├── index-DR4wMqUa.css         # Modern Cyber-Cyan/Dark Theme styling & animations
+│   ├── utils-D8jN6fhl.js          # Shared utility functions and DOM helpers
+│   ├── catchUploadFile.ts-DJwIizxX.js # Media upload interceptor and bridge
+│   ├── remoteConfig-MBhMtTF0.js   # Remote & local fallback configuration module
+│   └── primeicons-*               # UI icon font bundles (woff2, ttf, svg, eot)
+└── src/
+    ├── assets/                    # Action icons (16, 24, 32, 48, 128px)
+    └── ui/
+        └── side-panel/
+            └── index.html         # Chrome Side Panel UI host document
 ```
-*(Or click **Code > Download ZIP** and extract the folder).*
 
-### Step 2: Load into Chromium Browser (Chrome / Edge / Brave)
-1. Open your browser and navigate to:
-   ```text
-   chrome://extensions
+---
+
+## ⚙️ How It Works (Kaam Kaise Karta Hai)
+
+The extension architecture uses a multi-tier automation pipeline:
+
+```mermaid
+graph TD
+    A[User Opens Extension / Clicks Run] --> B[Chrome Side Panel UI]
+    B -->|Check Active Tab| C{Is Tab on Google Flow?}
+    C -->|No| D[Auto-Navigate / Switch to flow.google.com]
+    C -->|Yes| E[Load Prompts Queue]
+    D --> E
+    E -->|Serialize & Chunk Payloads| F[Content Script on Google Flow]
+    F -->|Chrome Debugger API Input Simulation| G[Google Flow Web Application]
+    G -->|Synthesize Images / Videos| H[Status Observer & DOM Watcher]
+    H -->|Detect Completed Generation| I[Background Service Worker]
+    I -->|chrome.downloads API| J[Auto-Download & Organize to Folder]
+```
+
+1. **Auto-Navigation & Tab Verification**:
+   - When opened or triggered, the extension checks if the active tab is on `flow.google.com`.
+   - If not, it finds an existing Google Flow tab and focuses it, or opens a new tab navigating to `https://flow.google.com/`.
+2. **Payload Serialization & Communication**:
+   - Prompts, aspect ratio, duration, and model parameters are packaged into structured JSON payloads.
+   - Large image data or prompts are chunked (1MB blocks) through `chrome.tabs.sendMessage` to avoid memory limits.
+3. **Chrome Debugger & Synthetic Input**:
+   - Uses native Chrome Debugger API commands (`Input.insertText`, `Input.dispatchKeyEvent`) and synthetic clipboard events to simulate human typing in Google Flow's interface.
+   - Configurable randomized delays between prompts prevent bot-detection flags.
+4. **Lifecycle Tracking & Auto-Download**:
+   - Continuously monitors Google Flow's generation status.
+   - When media is ready, hooks into `chrome.downloads.onDeterminingFilename` to automatically rename files and route them into custom subfolders.
+
+---
+
+## 📝 How Prompts are Handled (Prompts Handling Engine)
+
+### 1. Input Formatting & Delimiters
+- **Multi-line format**: Paste one prompt per line.
+- **Spreadsheet / CSV import**: Import columns of prompts directly.
+- **Sequential Indexing**: Every prompt is assigned an internal `promptIndex` to preserve execution sequence.
+
+### 2. Concurrency & Queuing
+- **Concurrent Prompts**: Default set to `1` for reliable execution on Google Flow.
+- **Sequential Execution**: Prompts run in FIFO (First-In, First-Out) order. Once Prompt 1 finishes, Prompt 2 begins automatically.
+- **Delay Jitter**: Configurable pause between prompts (e.g. `0s – 20s`) to simulate organic human typing.
+
+### 3. Generation Modes
+| Mode | Input | Output | Primary Use Case |
+| :--- | :--- | :--- | :--- |
+| **Text to Image** *(Default)* | Text prompt | 1 Output | Concept art, thumbnails, high-res assets |
+| **Text to Video** | Text prompt | Video clip (8s+) | Cinematic video sequences with camera control |
+| **Image to Video** | Seed image + prompt | Animated clip | Animate still images with fluid motion |
+| **Components to Video** | Seed images + elements | Cohesive scene | Multi-asset video composition |
+| **Agent Automation** | Text / Image prompts | Multi-modal outputs | Automated agent-driven generation pipeline |
+
+### 4. Smart Auto-Download & Routing
+- Captures finished outputs directly from Google CDN.
+- Supports `.mp4`, `.png`, `.jpg`, `.webp`.
+- Automatically prepends prefix and folder paths (e.g., `veo-folder-1/01_prompt_name.png`).
+
+---
+
+## 📥 Installation
+
+1. **Clone or Download Repository**:
+   ```bash
+   git clone https://github.com/abidalidevv/Test-to-image-Chrome-extention.git
    ```
-2. Enable **Developer mode** using the toggle switch in the top-right corner.
-3. Click the **Load unpacked** button in the top-left corner.
-4. Select the project folder.
-5. The extension icon will now appear in your browser toolbar! 🎉
+2. **Load into Browser**:
+   - Go to `chrome://extensions/` in Chrome / Brave / Edge.
+   - Toggle **Developer mode** (top-right).
+   - Click **Load unpacked** (top-left) and select the `veo-automation-with Mbmirza` folder.
+3. **Pin & Open**:
+   - Pin the **Veo Flow Automation** icon to your toolbar and click it to open the Side Panel.
 
 ---
 
-## 🕹️ How to Use
+## 🛠️ Step-by-Step Usage Guide
 
-1. **Sign in to Google Flow**:
-   Go to [https://flow.google.com](https://flow.google.com) in your browser.
-2. **Open the Side Panel**:
-   Click the extension icon in your Chrome toolbar to slide open the control panel.
-3. **Configure Prompts**:
-   - Choose your generation mode: *Text to Image*, *Text to Video*, or *Image to Video*.
-   - Paste your prompt list (one per line) or import from CSV.
-   - Adjust generation settings (Aspect Ratio, Duration, Resolution).
-4. **Start Automation**:
-   Click **Run / Start** and watch the extension automate prompt typing, generation monitoring, and auto-downloading.
-
----
-
-## 🏗️ Technical Architecture
-
-- **Extension Standard**: Chrome Manifest V3
-- **APIs**: `chrome.sidePanel`, `chrome.downloads`, `chrome.storage.local`, `chrome.debugger`, `chrome.cookies`
-- **Frontend Stack**: Vue 3, PrimeVue UI Components, Tailwind CSS Design Tokens
-- **Target Platform**: Google Flow (`*://flow.google.com/*`) & Google Veo
+1. **Open Extension**:
+   - Click the extension icon. It automatically opens the side panel and navigates to [Google Flow](https://flow.google.com).
+   - Ensure you are logged into your Google account.
+2. **Choose Mode & Enter Prompts**:
+   - Select **Text to Image** (or your desired mode).
+   - Type or paste your prompt list in the input area.
+   - Adjust aspect ratio (`16:9`, `9:16`, etc.).
+3. **Configure Settings**:
+   - Under Settings:
+     - **Default Mode**: `Text to Image`
+     - **Concurrent Prompts**: `1`
+     - **Outputs per prompt**: `1`
+     - **Download Folder**: `veo-folder-1`
+4. **Hit Run**:
+   - Click the **Run** button.
+   - Watch the real-time progress bar while the extension generates and downloads everything hands-free.
 
 ---
 
@@ -106,22 +170,12 @@ Developed and maintained with ❤️ by **Abid Ali Dev**:
 - 🐦 **X (Twitter)**: [@abidalidevv](https://x.com/abidalidevv)
 - 📸 **Instagram**: [@abidalidevv](https://www.instagram.com/abidalidevv)
 - 📘 **Facebook**: [abidalidevv](https://www.facebook.com/abidalidevv)
-- ☕ **Support / Ko-fi**: [ko-fi.com/abidalidev](https://ko-fi.com/abidalidev)
+- ☕ **Support on Ko-fi**: [ko-fi.com/abidalidev](https://ko-fi.com/abidalidev)
 - 📍 **Location**: Punjab, Pakistan
-- 📧 **Contact**: [abidmmp99@gmail.com](mailto:abidmmp99@gmail.com)
+- 📧 **Email**: [abidmmp99@gmail.com](mailto:abidmmp99@gmail.com)
 
 ---
 
-## 🤝 Contributing & Support
-
-- Found an issue? Open a ticket on [GitHub Issues](https://github.com/abidalidevv/Test-to-image-Chrome-extention/issues).
-- Want to contribute? Pull Requests are warmly welcome!
-- Give this project a **⭐ Star** if it helped you automate your creative workflow!
-
----
-
-## ⚖️ License & Disclaimer
+## ⚖️ License
 
 Distributed under the **MIT License**. See `LICENSE` for details.
-
-*Disclaimer: This extension is an independent automation tool developed for research, productivity, and personal workflows. It is not affiliated with, endorsed by, or sponsored by Google LLC or Alphabet Inc.*
