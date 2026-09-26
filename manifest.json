@@ -54,7 +54,8 @@
       "resources": [
         "assets/utils-D8jN6fhl.js",
         "assets/catchUploadFile.ts-DJwIizxX.js",
-        "assets/index.ts-D1zBd6hg.js"
+        "assets/index.ts-D1zBd6hg.js",
+        "worker-config.js"
       ],
       "use_dynamic_url": false
     }
